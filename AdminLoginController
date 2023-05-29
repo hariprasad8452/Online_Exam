@@ -1,0 +1,29 @@
+using Exam.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Exam.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class AdminLoginController : ControllerBase
+    {
+        private const string AdminEmail = "admin@gmail.com";
+        private const string AdminPassword = "admin123";
+        private const string AdminRole = "Admin";
+
+        [Route("LoginAdmin")]
+        [HttpPost]
+        public IActionResult Login([FromBody] AdminLogin adminLogin)
+        {
+            if (adminLogin.Email == AdminEmail && adminLogin.Password == AdminPassword)
+            {
+                // Admin login successful
+                return Ok("Admin");
+            }
+
+            // Invalid credentials
+            return Unauthorized();
+        }
+    }
+}
