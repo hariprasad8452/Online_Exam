@@ -1,0 +1,12 @@
+using Microsoft.EntityFrameworkCore;
+
+namespace Exam.Models
+{
+    public class ExamDBContext : DbContext
+    {
+        public ExamDBContext(DbContextOptions<ExamDBContext> options):base(options)
+        {
+        }
+        public DbSet<User> Users { get; set; }
+    }
+}
