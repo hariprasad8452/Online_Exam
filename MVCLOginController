@@ -1,0 +1,73 @@
+using Exam.Models;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+
+namespace webpart.Controllers
+{
+    public class LoginController : Controller
+    {
+        Uri basedaddress = new Uri("http://localhost:37838/api");
+        private readonly HttpClient _httpClient;
+        public LoginController()
+        {
+            _httpClient = new HttpClient();
+            _httpClient.BaseAddress = basedaddress;
+        }
+        [HttpGet]
+        public IActionResult Index()
+        {
+            List<LoginUser> userList = new List<LoginUser>();
+            HttpResponseMessage response = _httpClient.GetAsync(_httpClient.BaseAddress + "/Login/Get").Result;
+            if (response.IsSuccessStatusCode)
+            {
+                string data = response.Content.ReadAsStringAsync().Result;
+                userList = JsonConvert.DeserializeObject<List<LoginUser>>(data);
+            }
+            return View();
+        }
+        public IActionResult Login()
+        {
+            return View();
+        }
+        [HttpPost]
+        public async Task<ActionResult> Login(LoginUser model)
+        {
+            HttpResponseMessage response = await _httpClient.PostAsJsonAsync($"{basedaddress}api/users/login", model);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Login successful
+                // You can store user information in session or authentication cookie
+                return RedirectToAction("Index", "Dashboard");
+            }
+            else
+            {
+                // Login failed
+                ModelState.AddModelError("", "Invalid username or password");
+                return View(model);
+            }
+        }
+        public ActionResult Register()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> Register(UserRegister model)
+        {
+            HttpResponseMessage response = await _httpClient.PostAsJsonAsync($"{basedaddress}api/register", model);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Registration successful
+                return RedirectToAction("Login");
+            }
+            else
+            {
+                // Registration failed
+                ModelState.AddModelError("", "Failed to register");
+                return View(model);
+            }
+        }
+    }
+}
