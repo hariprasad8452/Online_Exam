@@ -1,0 +1,75 @@
+using Exam.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Exam.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class LoginController : ControllerBase
+    {
+        ExamDBContext db = null;
+        public LoginController(ExamDBContext context)
+        {
+            db = context;
+        }
+        
+       
+        [Route("UserRegister")]
+        [HttpPost]
+        public IActionResult Register([FromBody] UserRegister userRegister)
+        {
+            if (userRegister == null)
+            {
+                return BadRequest();
+            }
+            string username = GenerateUserName(userRegister.FirstName, userRegister.LastName);
+            if (ModelState.IsValid)
+            { 
+                var user = new User();
+                user.UserName = username;
+                user.Password = userRegister.Password;
+                user.FirstName = userRegister.FirstName;
+                user.LastName = userRegister.LastName;
+                user.Age = userRegister.Age;
+                user.Gender = userRegister.Gender;
+                user.Address = userRegister.Address;
+                user.PhoneNumber = userRegister.PhoneNumber;
+                user.Role = "User";
+                db.Users.Add(user);
+                db.SaveChanges();
+                return Ok("Registration Success");
+            }
+            return BadRequest("Invalid Registration....!");
+        }
+        [HttpGet]
+        public string GenerateUserName(string firstName, string lastName)
+        {
+            string username = (firstName.Substring(0, Math.Min(3, firstName.Length)).ToLower()) + "@" +
+                (lastName.Substring(0, Math.Min(3, lastName.Length)).ToLower());
+            return username;
+        }
+        [Route("LoginUser")]
+        [HttpPost]
+        public IActionResult Login([FromBody] LoginUser loginUser)
+        {
+            if (loginUser == null)
+            {
+                return BadRequest();
+            }
+            var user = (from u in db.Users
+                        where u.UserName == loginUser.UserName
+                        &&
+                        u.Password == loginUser.Password
+                        select u).SingleOrDefault();
+            if(user==null)
+            {
+                return BadRequest("Invalid Login Credintials");
+            }
+            else
+            {
+                return Ok("welcome" + user);
+            }
+        }
+    }
+}
